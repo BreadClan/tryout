@@ -6,6 +6,28 @@
     <title>Bread Clan Tryouts</title>
     <!-- Favicon: Using a bread emoji for quick branding -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍞</text></svg>">
+    
+    <!-- === OPEN GRAPH (OG) & TWITTER METADATA FOR EMBEDS === -->
+    <meta name="description" content="Join the ranks of the loaf! Submit your Roblox username here to request a tryout for the Bread Clan.">
+    <meta name="keywords" content="Bread Clan, Roblox clan, tryout, application, gaming, group, Bread, Loaf">
+    <meta name="author" content="Bread Clan">
+    <meta name="robots" content="index, follow">
+    
+    <meta property="og:title" content="🍞 Bread Clan Tryouts | Official Application">
+    <meta property="og:description" content="Join the ranks of the loaf! Submit your Roblox username here to request a tryout for the Bread Clan.">
+    <!-- IMPORTANT: Replace this placeholder image link with a real, high-resolution image of your clan's logo or a bread graphic for the best embed result! -->
+    <meta property="og:image" content="https://cdn.discordapp.com/icons/1389932926426288200/56507cae463b84e342f7ccd1558cf966.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:site_name" content="Bread Clan">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card (Summary Large Image is preferred for large previews) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://cdn.discordapp.com/icons/1389932926426288200/56507cae463b84e342f7ccd1558cf966.png">
+    <!-- === END METADATA === -->
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles to match the 'Xeno' inspiration but in White/Yellow */
@@ -224,11 +246,11 @@
         const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1423369680382332989/niUjSuzFC1RhOiB8zL5DqmhJIreoEsfDhVFV_pM9R0dXO6-peKE_DJ2uzB3P5SAO0DPl';
         const ROBLOX_PROFILE_URL = 'https://www.roblox.com/users/2924890863/profile';
         
-        // --- CUSTOM SUCCESS EMBED CONFIGURATION ---
+        // --- CUSTOM SUCCESS EMBED CONFIGURATION (for the on-screen modal) ---
         const SUCCESS_EMBED_IMAGE_URL = 'https://placehold.co/128x128/FFD700/FFFFFF?text=🍞'; // Placeholder image URL
         const SUCCESS_EMBED_TITLE = 'Loaf Accepted!';
         const SUCCESS_EMBED_DESCRIPTION = 'Your application has been successfully toasted and sent to our recruiters. Check Discord for updates!';
-        // ------------------------------------------
+        // ---------------------------------------------------------------------
 
         // Set the Roblox link dynamically
         document.getElementById('roblox-link').href = ROBLOX_PROFILE_URL;
