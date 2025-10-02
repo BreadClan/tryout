@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bread Clan Tryouts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles to match the 'Xeno' inspiration but in White/Yellow */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFCEF; /* Very light, warm off-white/cream background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+            padding: 2rem;
+            border: 2px solid #FFD700; /* Gold border for accent */
+        }
+
+        .primary-button {
+            transition: all 0.2s ease-in-out;
+            background-color: #FFD700; /* Gold/Yellow Primary Color */
+            color: #4A2C08; /* Dark Brown Text for contrast */
+            font-weight: 800;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+        }
+
+        .primary-button:hover {
+            background-color: #FFC400; /* Slightly darker yellow on hover */
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .primary-button:active {
+            transform: scale(0.98);
+        }
+
+        input[type="text"] {
+            background-color: #FFFBEA; /* Light yellow input background */
+            border: 1px solid #FFD700;
+            border-radius: 8px;
+            padding: 10px 15px;
+            width: 100%;
+            transition: border-color 0.2s;
+            color: #4A2C08;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #FFA500; /* Orange-yellow focus */
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .card {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Icon for bread/wheat */
+        .bread-icon {
+            display: inline-block;
+            margin-right: 8px;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card space-y-6">
+        
+        <!-- === Page 1: Landing Page === -->
+        <div id="page1" class="page-content">
+            <div class="text-center space-y-4">
+                <div class="text-6xl mb-4" role="img" aria-label="Bread icon">🥖</div>
+                <h1 class="text-3xl font-extrabold text-gray-800">
+                    <span class="bread-icon">🍞</span> Bread Clan Tryouts
+                </h1>
+                <p class="text-gray-600">
+                    Welcome to the official Bread Clan tryout application. Click below to take the first step in joining our ranks and becoming one with the loaf.
+                </p>
+            </div>
+            <button onclick="showPage(2)" class="w-full primary-button mt-6">
+                Apply Now <span class="text-xl ml-2">➡️</span>
+            </button>
+        </div>
+
+        <!-- === Page 2: Tryout Form === -->
+        <div id="page2" class="page-content hidden">
+            <div class="text-center space-y-4">
+                <h1 class="text-2xl font-extrabold text-gray-800">
+                    Roblox Tryout Application
+                </h1>
+                <p class="text-sm text-gray-500">
+                    Complete the two steps below to submit your request.
+                </p>
+            </div>
+
+            <div class="mt-6 space-y-4">
+                <!-- Step 1: Roblox Profile Link -->
+                <div class="border-b pb-4 border-yellow-200">
+                    <h2 class="text-lg font-semibold text-gray-700 mb-2">Step 1: View Profile</h2>
+                    <p class="text-sm text-gray-600 mb-3">
+                        You will be redirected to the required Roblox profile.
+                    </p>
+                    <a id="roblox-link" href="#" target="_blank" class="block w-full text-center primary-button">
+                        View Required Roblox Profile
+                    </a>
+                </div>
+
+                <!-- Step 2: Username Input and Submission -->
+                <div class="pt-4 space-y-4">
+                    <h2 class="text-lg font-semibold text-gray-700 mb-2">Step 2: Submit Your Details</h2>
+                    <label for="username-input" class="block text-sm font-medium text-gray-700">Your Roblox Username</label>
+                    <input type="text" id="username-input" placeholder="e.g., BreadMaster42" required>
+                    <button onclick="submitTryout()" class="w-full primary-button mt-4" id="submit-button">
+                        Request Tryout <span class="text-xl ml-2">🚀</span>
+                    </button>
+                    
+                    <!-- Submission Status Message -->
+                    <div id="message-box" class="mt-4 p-3 text-sm rounded-lg text-center font-medium hidden" role="alert"></div>
+                    
+                    <!-- Loading Indicator -->
+                    <div id="loading-spinner" class="hidden text-center mt-4">
+                        <div class="animate-spin inline-block w-6 h-6 border-4 border-yellow-400 border-t-transparent rounded-full" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="showPage(1)" class="w-full text-sm text-gray-500 hover:text-gray-700 mt-4">
+                    &larr; Back to Home
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Global variables for Firebase setup (required, even if not used for this specific task)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        /**
+         * IMPORTANT: REPLACE THESE PLACEHOLDERS
+         * 1. DISCORD_WEBHOOK_URL: Replace with your actual Discord Webhook URL.
+         * 2. ROBLOX_PROFILE_URL: Replace with the URL of the Roblox profile you want to link to.
+         */
+        const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1423369680382332989/niUjSuzFC1RhOiB8zL5DqmhJIreoEsfDhVFV_pM9R0dXO6-peKE_DJ2uzB3P5SAO0DPl';
+        const ROBLOX_PROFILE_URL = 'https://www.roblox.com/users/2924890863/profile';
+
+        // Set the Roblox link dynamically
+        document.getElementById('roblox-link').href = ROBLOX_PROFILE_URL;
+
+        // --- UI State Management ---
+        let currentPage = 1;
+
+        /**
+         * Toggles visibility between the different application pages (stages).
+         * @param {number} pageNumber - The page to show (1 or 2).
+         */
+        function showPage(pageNumber) {
+            currentPage = pageNumber;
+            const page1 = document.getElementById('page1');
+            const page2 = document.getElementById('page2');
+
+            if (pageNumber === 1) {
+                page1.classList.remove('hidden');
+                page2.classList.add('hidden');
+            } else if (pageNumber === 2) {
+                page1.classList.add('hidden');
+                page2.classList.remove('hidden');
+            }
+        }
+
+        // Initialize the first page view
+        document.addEventListener('DOMContentLoaded', () => {
+            showPage(1);
+        });
+        
+        // --- Submission Logic ---
+
+        const usernameInput = document.getElementById('username-input');
+        const messageBox = document.getElementById('message-box');
+        const submitButton = document.getElementById('submit-button');
+        const loadingSpinner = document.getElementById('loading-spinner');
+
+        /**
+         * Displays a status message to the user.
+         * @param {string} message - The text message.
+         * @param {string} type - 'success' or 'error'.
+         */
+        function displayMessage(message, type) {
+            messageBox.textContent = message;
+            messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800');
+            
+            if (type === 'success') {
+                messageBox.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'error') {
+                messageBox.classList.add('bg-red-100', 'text-red-800');
+            }
+        }
+
+        /**
+         * Handles the Discord webhook submission with exponential backoff for retries.
+         * @param {object} payload - The JSON payload for the webhook.
+         * @param {number} retries - Number of retries attempted (default 0).
+         */
+        async function sendWebhook(payload, retries = 0) {
+            const MAX_RETRIES = 3;
+
+            try {
+                const response = await fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    displayMessage('Success! Your tryout request has been sent to the clan.', 'success');
+                    usernameInput.value = ''; // Clear input on success
+                    return true;
+                } else if (response.status === 429 && retries < MAX_RETRIES) {
+                    // Rate limit hit, apply exponential backoff
+                    const delay = Math.pow(2, retries) * 1000 + Math.random() * 1000; // 1s, 2s, 4s + jitter
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    console.warn(`Webhook rate limit hit. Retrying in ${delay}ms... (Attempt ${retries + 1})`);
+                    return await sendWebhook(payload, retries + 1);
+                } else {
+                    // Non-recoverable error or max retries reached
+                    throw new Error(`Webhook failed with status: ${response.status} ${response.statusText}`);
+                }
+
+            } catch (error) {
+                console.error('Error sending webhook:', error);
+                displayMessage('Error: Could not submit tryout request. Please try again later or contact an admin.', 'error');
+                return false;
+            }
+        }
+
+        /**
+         * Main function to handle the tryout submission.
+         */
+        async function submitTryout() {
+            const username = usernameInput.value.trim();
+            messageBox.classList.add('hidden'); // Clear previous messages
+
+            if (!username) {
+                displayMessage('Please enter your Roblox username.', 'error');
+                return;
+            }
+
+            // Disable button and show loading spinner
+            submitButton.disabled = true;
+            submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+            loadingSpinner.classList.remove('hidden');
+
+            const payload = {
+                content: "New Bread Clan Tryout Request!",
+                embeds: [{
+                    title: "🍞 New Tryout Applicant",
+                    description: `Roblox Username: **${username}**\n\nUser is requesting a tryout.`,
+                    color: 16766720, // Yellow color (FFD700)
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: `Submitted from App ID: ${appId}`
+                    }
+                }]
+            };
+
+            await sendWebhook(payload);
+
+            // Re-enable button and hide spinner
+            submitButton.disabled = false;
+            submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            loadingSpinner.classList.add('hidden');
+        }
+
+        // Make submitTryout available in the global scope for the onclick attribute
+        window.submitTryout = submitTryout;
+        window.showPage = showPage;
+    </script>
+</body>
+</html>
