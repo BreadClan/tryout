@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bread Clan Tryouts</title>
+    <!-- Favicon: Using a bread emoji for quick branding -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍞</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles to match the 'Xeno' inspiration but in White/Yellow */
@@ -63,6 +65,44 @@
             outline: none;
             border-color: #FFA500; /* Orange-yellow focus */
             box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+        }
+
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+            padding: 2rem;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
         }
 
         /* Responsive adjustments */
@@ -132,13 +172,13 @@
                         Request Tryout <span class="text-xl ml-2">🚀</span>
                     </button>
                     
-                    <!-- Submission Status Message -->
+                    <!-- Submission Status Message (now primarily for errors) -->
                     <div id="message-box" class="mt-4 p-3 text-sm rounded-lg text-center font-medium hidden" role="alert"></div>
                     
                     <!-- Loading Indicator -->
                     <div id="loading-spinner" class="hidden text-center mt-4">
                         <div class="animate-spin inline-block w-6 h-6 border-4 border-yellow-400 border-t-transparent rounded-full" role="status">
-                            <span class="sr-only">Loading...</span>
+                            <span class="sr-only">Sending...</span>
                         </div>
                     </div>
                 </div>
@@ -150,6 +190,25 @@
         </div>
     </div>
 
+    <!-- === Custom Success Modal/Embed Structure === -->
+    <div id="success-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <!-- Custom Image -->
+            <img id="modal-image" src="" alt="Submission Success Image" class="w-32 h-32 object-cover mx-auto rounded-full mb-4 border-4 border-yellow-400">
+            
+            <!-- Custom Title -->
+            <h2 id="modal-title" class="text-2xl font-extrabold text-gray-800 mb-2"></h2>
+            
+            <!-- Custom Description -->
+            <p id="modal-description" class="text-gray-600 mb-6"></p>
+
+            <button onclick="closeModal()" class="w-full primary-button">
+                Finish & Close
+            </button>
+        </div>
+    </div>
+    <!-- === End Modal Structure === -->
+
     <script type="module">
         // Global variables for Firebase setup (required, even if not used for this specific task)
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -160,12 +219,30 @@
          * IMPORTANT: REPLACE THESE PLACEHOLDERS
          * 1. DISCORD_WEBHOOK_URL: Replace with your actual Discord Webhook URL.
          * 2. ROBLOX_PROFILE_URL: Replace with the URL of the Roblox profile you want to link to.
+         * 3. SUCCESS_EMBED_IMAGE_URL: Replace with the URL of your custom image (e.g., a clan logo, a cool bread graphic).
          */
         const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1423369680382332989/niUjSuzFC1RhOiB8zL5DqmhJIreoEsfDhVFV_pM9R0dXO6-peKE_DJ2uzB3P5SAO0DPl';
         const ROBLOX_PROFILE_URL = 'https://www.roblox.com/users/2924890863/profile';
+        
+        // --- CUSTOM SUCCESS EMBED CONFIGURATION ---
+        const SUCCESS_EMBED_IMAGE_URL = 'https://placehold.co/128x128/FFD700/FFFFFF?text=🍞'; // Placeholder image URL
+        const SUCCESS_EMBED_TITLE = 'Loaf Accepted!';
+        const SUCCESS_EMBED_DESCRIPTION = 'Your application has been successfully toasted and sent to our recruiters. Check Discord for updates!';
+        // ------------------------------------------
 
         // Set the Roblox link dynamically
         document.getElementById('roblox-link').href = ROBLOX_PROFILE_URL;
+
+        // --- DOM Elements ---
+        const usernameInput = document.getElementById('username-input');
+        const messageBox = document.getElementById('message-box');
+        const submitButton = document.getElementById('submit-button');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const successModal = document.getElementById('success-modal');
+        const modalImage = document.getElementById('modal-image');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDescription = document.getElementById('modal-description');
+
 
         // --- UI State Management ---
         let currentPage = 1;
@@ -193,15 +270,8 @@
             showPage(1);
         });
         
-        // --- Submission Logic ---
-
-        const usernameInput = document.getElementById('username-input');
-        const messageBox = document.getElementById('message-box');
-        const submitButton = document.getElementById('submit-button');
-        const loadingSpinner = document.getElementById('loading-spinner');
-
         /**
-         * Displays a status message to the user.
+         * Displays a status message to the user (used primarily for errors now).
          * @param {string} message - The text message.
          * @param {string} type - 'success' or 'error'.
          */
@@ -214,6 +284,40 @@
             } else if (type === 'error') {
                 messageBox.classList.add('bg-red-100', 'text-red-800');
             }
+        }
+
+        /**
+         * Shows the custom success modal pop-up.
+         */
+        function showSuccessEmbed() {
+            // Set dynamic content for the modal
+            modalImage.src = SUCCESS_EMBED_IMAGE_URL;
+            modalTitle.textContent = SUCCESS_EMBED_TITLE;
+            modalDescription.textContent = SUCCESS_EMBED_DESCRIPTION;
+
+            // Show the modal
+            successModal.classList.remove('hidden');
+            // Use setTimeout to ensure the 'active' class transition applies after visibility is set
+            setTimeout(() => {
+                successModal.classList.add('active');
+            }, 10);
+            
+            // Clear input on success
+            usernameInput.value = ''; 
+            // Hide any pending small status message
+            messageBox.classList.add('hidden');
+        }
+
+        /**
+         * Hides the custom success modal pop-up and returns to the home page.
+         */
+        function closeModal() {
+            successModal.classList.remove('active');
+            // Hide the modal after the transition is complete
+            setTimeout(() => {
+                successModal.classList.add('hidden');
+                showPage(1); // Optional: return to page 1 after closing
+            }, 300); 
         }
 
         /**
@@ -232,8 +336,7 @@
                 });
 
                 if (response.ok) {
-                    displayMessage('Success! Your tryout request has been sent to the clan.', 'success');
-                    usernameInput.value = ''; // Clear input on success
+                    showSuccessEmbed(); // Use the custom embed for success
                     return true;
                 } else if (response.status === 429 && retries < MAX_RETRIES) {
                     // Rate limit hit, apply exponential backoff
@@ -265,6 +368,12 @@
                 return;
             }
 
+            // Simple client-side length check (Roblox usernames are 3-20 characters)
+            if (username.length < 3 || username.length > 20) {
+                displayMessage('Roblox usernames must be between 3 and 20 characters.', 'error');
+                return;
+            }
+
             // Disable button and show loading spinner
             submitButton.disabled = true;
             submitButton.classList.add('opacity-50', 'cursor-not-allowed');
@@ -291,9 +400,10 @@
             loadingSpinner.classList.add('hidden');
         }
 
-        // Make submitTryout available in the global scope for the onclick attribute
+        // Make functions available in the global scope for the onclick attribute
         window.submitTryout = submitTryout;
         window.showPage = showPage;
+        window.closeModal = closeModal;
     </script>
 </body>
 </html>
